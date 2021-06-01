@@ -13,7 +13,8 @@ export class StatisticsService {
 
     ) {
         const CronJob = cron.CronJob;
-        const dailyStatictical = new CronJob(`*/1 * * * *`, async () => {
+        // run each 24h
+        const dailyStatictical = new CronJob(`* */24 * * *`, async () => {
             const { revenue, totalOrder, maxSelledProduct, selledProductStatistics, key } = await this.getData(new Date())
             cacheService.save(key, JSON.stringify({ revenue, totalOrder, maxSelledProduct, selledProductStatistics }))
         }, undefined, false, "Asia/Ho_Chi_Minh", null, false);
@@ -22,7 +23,6 @@ export class StatisticsService {
 
     async statistics(date: string) {
         const data = await this.cacheService.get(date)
-        console.log('data', data)
         if(data) return JSON.parse(data)
         return
     }
@@ -75,9 +75,6 @@ export class StatisticsService {
         if (selledProductStatistics[maxSelledProduct] < selledProductStatistics[`${selledProducts[i]}`]) {
             maxSelledProduct = selledProducts[i]
         }
-
-        console.log('selledProductStatistics', selledProductStatistics)
-        console.log('maxSelledProduct', maxSelledProduct)
 
         return {
             totalOrder, selledProductStatistics, maxSelledProduct, revenue, key

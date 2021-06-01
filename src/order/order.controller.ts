@@ -38,10 +38,8 @@ export class OrderController {
 
         const existedProductCode = await this.productService.checkProductCodes(data.products)
         if (!existedProductCode) throw new RestError({ errorCode: 'PRODUCT_CODE_NOT_FOUND' })
-        console.log('existedProductCode', existedProductCode)
 
         let order = new Order(data)
-        console.log('data', data)
         order = await this.orderService.createOrUpdate(order)
         return order
     }
