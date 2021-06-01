@@ -1,0 +1,35 @@
+version: "3"
+services:
+  nestjs-demo-node:
+    build: ./
+    container_name: nestjs-demo-node
+    volumes: 
+      - ./:/app
+    depends_on:
+      - nestjs-demo-postgres
+    env_file: 
+      - .env
+    ports: 
+      - 3000:3000
+    command: bash -c "npm i && npm run start:dev"
+  nestjs-demo-postgres:
+    image: postgres:9.5
+    container_name: nestjs-demo-postgres
+    volumes:
+      - nestjs-demo-postgres:/var/lib/postgresql/data
+    env_file: 
+      - .env
+  nestjs-demo-redis:
+    image: redis:6.2
+    container_name: nestjs-demo-redis
+    env_file: 
+      - .env
+    
+
+volumes:
+  nestjs-demo-postgres:
+
+networks:
+  default:
+    external:
+      name: demo-net

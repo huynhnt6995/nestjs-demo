@@ -1,0 +1,1 @@
+node ./node_modules/ts-node/dist/bin.js ./node_modules/typeorm/cli.js migration:run
