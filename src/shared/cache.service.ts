@@ -27,8 +27,6 @@ export class CacheService {
     get(key: string) {
         return new Promise<string>((resolve, reject) => {
             this.redisClient.get(key, (err, reply) => {
-                console.log('get key', key)
-                console.log('get data', reply)
                 if (!err) resolve(reply)
                 else reject(err)
             })
