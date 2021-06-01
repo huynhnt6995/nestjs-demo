@@ -62,10 +62,11 @@ method: PUT
 endpoint: http://localhost:3000/orders/:id
 method: DELETE
 ```
-6. Statistics
+6. Report
 ```
-endpoint: http://localhost:3000/orders/statistics-by-day
+http://localhost:3000/orders/report
 method: GET
 query example:
-    date=10_10_2020 // not required
+    startDate=2021-06-01
+    endDate=2021-06-01
 ```

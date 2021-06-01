@@ -17,6 +17,7 @@ import { ProductService } from 'src/product/product.service';
 import { StatisticsOrderByDayDTO } from './dtos/StatisticsOrderByDayDTO';
 import { StatisticsService } from './statistics.service';
 import { getVnDateFormat } from 'src/shared/utils/datetimeUtil';
+import { request } from 'express';
 
 
 @Controller('orders')
@@ -44,12 +45,13 @@ export class OrderController {
         return order
     }
 
-    @Get('/statistics-by-day')
+    @Get('/report')
     async statistics(@Query() query: StatisticsOrderByDayDTO) {
         let date: string | undefined
-        if (query.date) date = query.date
-        else date = getVnDateFormat(new Date())
-        const data = await this.statisticsService.statistics(date)
+
+        const { startDate, endDate } = query
+
+        const data = await this.statisticsService.statistics(startDate, endDate)
         if (!data) throw new RestError({
             errorCode: 'NOT_FOUND_STATISTICS_DATA'
         })

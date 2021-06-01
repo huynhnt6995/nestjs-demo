@@ -1,3 +1,4 @@
 export interface StatisticsOrderByDayDTO {
-    date?: string
+    startDate?: string
+    endDate?: string
 }

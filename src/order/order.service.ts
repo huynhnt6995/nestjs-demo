@@ -1,8 +1,4 @@
 import { InjectRepository } from "@nestjs/typeorm";
-import { Product } from "src/product/product.entity";
-import { ProductService } from "src/product/product.service";
-import { CacheService } from "src/shared/cache.service";
-import { getDateRangeFromVnStringFormat } from "src/shared/utils/datetimeUtil";
 import { Repository } from "typeorm";
 import { FindOrderDTO } from "./dtos/FindOrderDTO";
 import { Order } from "./order.entity";

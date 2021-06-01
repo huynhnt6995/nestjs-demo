@@ -14,9 +14,10 @@ export class CacheService {
         })
     }
 
-    save(key: string, value: string, expiredInMiliSeconds: number = 1000000 ) {
+    save(key: string, value: string, expiredInSeconds: number = 1000000 ) {
+        console.log('saving redis: ', key, value)
         return new Promise<string>((resolve, reject) => {
-            this.redisClient.setex(key, expiredInMiliSeconds, value, (err, reply) => {
+            this.redisClient.setex(key, expiredInSeconds, value, (err, reply) => {
                 console.log('set redis error', err)
                 if (!err) resolve(reply)
                 else reject(err)
@@ -27,6 +28,15 @@ export class CacheService {
     get(key: string) {
         return new Promise<string>((resolve, reject) => {
             this.redisClient.get(key, (err, reply) => {
+                if (!err) resolve(reply)
+                else reject(err)
+            })
+        })
+    }
+
+    gets(keys: string[]) {
+        return new Promise<string[]>((resolve, reject) => {
+            this.redisClient.mget(keys, (err, reply) => {
                 if (!err) resolve(reply)
                 else reject(err)
             })

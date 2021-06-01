@@ -1,7 +1,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import * as cron from 'cron';
 import { CacheService } from 'src/shared/cache.service';
-import { getDateRangeFromVnStringFormat, getVnDateFormat } from 'src/shared/utils/datetimeUtil';
+import { getDateRangeFromVnStringFormat, getRangeDateString, getVnDateFormat } from 'src/shared/utils/datetimeUtil';
 import { Repository } from 'typeorm';
 import { Order } from './order.entity';
 
@@ -13,24 +13,61 @@ export class StatisticsService {
 
     ) {
         const CronJob = cron.CronJob;
-        // run each 24h
-        const dailyStatictical = new CronJob(`* */24 * * *`, async () => {
+        // run each 24h * */24 * * *
+        const dailyStatictical = new CronJob(`*/1 * * * *`, async () => {
             const { revenue, totalOrder, maxSelledProduct, selledProductStatistics, key } = await this.getData(new Date())
-            cacheService.save(key, JSON.stringify({ revenue, totalOrder, maxSelledProduct, selledProductStatistics }))
+            cacheService.save(
+                key,
+                JSON.stringify({ revenue, totalOrder, maxSelledProduct, selledProductStatistics }),
+                31536000
+            )
         }, undefined, false, "Asia/Ho_Chi_Minh", null, false);
         dailyStatictical.start();
     }
 
-    async statistics(date: string) {
-        const data = await this.cacheService.get(date)
-        if(data) return JSON.parse(data)
-        return
+    async statistics(startDate: string, endDate: string) {
+        const dates = getRangeDateString(startDate, endDate)
+        const listRawData = await this.cacheService.gets(dates)
+
+        let dateDatas: any[] = []
+        let revenue = 0
+        let totalOrder = 0
+        let maxSelledProduct: string | undefined
+        let selledProductStatistics = {}
+
+        for (let i = 0; i < listRawData.length; i++) {
+            if (listRawData[i]) {
+                let data = JSON.parse(listRawData[i])
+                dateDatas.push({ date: dates[i], data })
+                revenue += data.revenue
+                totalOrder += data.totalOrder
+                for (let key of Object.keys(data.selledProductStatistics)) {
+                    if (!selledProductStatistics[key]) {
+                        selledProductStatistics[key] = data.selledProductStatistics[key]
+                    } else {
+                        selledProductStatistics[key] += data.selledProductStatistics[key]
+                    }
+                }
+            }
+        }
+
+        for (let key of Object.keys(selledProductStatistics)) {
+            if (!maxSelledProduct) {
+                maxSelledProduct = key
+            } else {
+                if (selledProductStatistics[maxSelledProduct] < selledProductStatistics[key]) {
+                    maxSelledProduct = key
+                }
+            }
+        }
+
+        return { dateDatas, revenue, totalOrder, maxSelledProduct, selledProductStatistics }
     }
 
     private async getData(date: Date) {
         const key = getVnDateFormat(date)
         const { startDate, endDate } = getDateRangeFromVnStringFormat(key)
-        
+
         const orders = await this.orderRepository.createQueryBuilder('order')
             .where('order.createdAt >= :startDate and order.createdAt <= :endDate', { startDate, endDate })
             .getMany()
